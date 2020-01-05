@@ -14,6 +14,7 @@
         <module>MarketAnalysis</module>
         <module>LoginFailDetect</module>
         <module>OrderPayDetect</module>
+        <module>Defination</module>
     </modules>
     <properties>
         <flink.version>1.7.2</flink.version>
