@@ -176,6 +176,6 @@ class SortTopNFunction extends KeyedProcessFunction<Long, HotItemsItemViewCount,
             sb.append("点击量=").append(result.getCount()).append("\n");
         }
         Thread.sleep(1000);
-        out.collect(sb.toString());
+        out.collect(sb.toString() );
     }
 }
