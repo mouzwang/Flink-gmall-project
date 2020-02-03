@@ -1,9 +1,12 @@
 package com.yangcong.bigdata.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by mouzwang on 2020-01-19 15:09
  */
-public class Warning {
+public class Warning implements Serializable {
+    private static final long serialVersionUID=1L;
     private long userId;
     private long firstFailTime;
     private long lastFailTime;
@@ -39,5 +42,15 @@ public class Warning {
 
     public void setWarningMsg(String warningMsg) {
         this.warningMsg = warningMsg;
+    }
+
+    @Override
+    public String toString() {
+        return "Warning{" +
+                "userId=" + userId +
+                ", firstFailTime=" + firstFailTime +
+                ", lastFailTime=" + lastFailTime +
+                ", warningMsg='" + warningMsg + '\'' +
+                '}';
     }
 }

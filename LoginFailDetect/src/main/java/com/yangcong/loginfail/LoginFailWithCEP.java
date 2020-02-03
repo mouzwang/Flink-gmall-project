@@ -16,7 +16,7 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,19 +42,22 @@ public class LoginFailWithCEP {
         prop.setProperty("key.deserializer", prop.getProperty("key.deserializer"));
         prop.setProperty("value.deserializer", prop.getProperty("value.deserializer"));
         prop.setProperty("auto.offset.reset", prop.getProperty("auto.offset.reset"));
-        SingleOutputStreamOperator<LoginEvent> sourceStream = env.addSource(new FlinkKafkaConsumer<String>(
-                "loginfail", new SimpleStringSchema(), prop)).map(new MapFunction<String, LoginEvent>() {
-            @Override
-            public LoginEvent map(String value) throws Exception {
-                String[] dataArray = value.split(",");
-                LoginEvent event = new LoginEvent();
-                event.setUserId(Long.parseLong(dataArray[0]));
-                event.setIp(dataArray[1]);
-                event.setStatus(dataArray[2]);
-                event.setTimestamp(Long.parseLong(dataArray[3]));
-                return event;
-            }
-        });
+        SingleOutputStreamOperator<LoginEvent> sourceStream =
+                env.addSource(new FlinkKafkaConsumer011<String>("flinktest2",
+                        new SimpleStringSchema(), prop))
+                .map(new MapFunction<String, LoginEvent>() {
+                    @Override
+                    public LoginEvent map(String value) throws Exception {
+                        String[] dataArray = value.split(",");
+                        LoginEvent event = new LoginEvent();
+                        event.setUserId(Long.parseLong(dataArray[0]));
+                        event.setIp(dataArray[1]);
+                        event.setStatus(dataArray[2]);
+                        event.setTimestamp(Long.parseLong(dataArray[3]));
+                        return event;
+                    }
+                });
+        sourceStream.print();
         //定义eventTime
         KeyedStream<LoginEvent, Long> keyedStream = sourceStream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<LoginEvent>(Time.seconds(3)) {
             @Override
@@ -78,16 +81,15 @@ public class LoginFailWithCEP {
                         return "fail".equals(value.getStatus());
                     }
                 })
-                .within(Time.seconds(5));
+                .within(Time.minutes(3));
         //应用定义的模式序列
         PatternStream<LoginEvent> patternStream = CEP.pattern(keyedStream, pattern);
         //从patternStream中检出符合规则的事件序列
         SingleOutputStreamOperator<Warning> selectedStream = patternStream.select(new PatternSelectFunction<LoginEvent, Warning>() {
-            Warning warn = new Warning();
-
             //检测到一个匹配的事件,就会调用这个方法
             @Override
             public Warning select(Map<String, List<LoginEvent>> map) throws Exception {
+                Warning warn = new Warning();
                 //先取出事件的时间戳,因为前面没有使用循环模式,所以这个List中只有一个元素
                 LoginEvent start = map.get("start").iterator().next();
                 LoginEvent next = map.get("next").iterator().next();

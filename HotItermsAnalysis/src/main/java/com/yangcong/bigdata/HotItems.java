@@ -1,9 +1,5 @@
 package com.yangcong.bigdata;
 
-import com.see.hotitems_analysis.CountAgg;
-import com.see.hotitems_analysis.ItemViewCount;
-import com.see.hotitems_analysis.UserBehavior;
-import com.see.hotitems_analysis.WindowCountResult;
 import com.yangcong.bigdata.bean.HotItemsItemViewCount;
 import com.yangcong.bigdata.bean.HotItemsUserBehavior;
 import org.apache.flink.api.common.functions.AggregateFunction;
@@ -20,7 +16,7 @@ import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrderness
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.apache.flink.util.Collector;
 
 
@@ -34,7 +30,7 @@ import java.util.*;
  * 每隔5分钟输出最近一小时内点击量最多的前N个商品
  */
 public class HotItems {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.setParallelism(1);
@@ -48,7 +44,10 @@ public class HotItems {
         prop.setProperty("key.deserializer", prop.getProperty("key.deserializer"));
         prop.setProperty("value.deserializer", prop.getProperty("value.deserializer"));
         prop.setProperty("auto.offset.reset", prop.getProperty("auto.offset.reset"));
-        SingleOutputStreamOperator<HotItemsUserBehavior> inputSource = env.addSource(new FlinkKafkaConsumer<String>("hotitems", new SimpleStringSchema(), prop))
+        SingleOutputStreamOperator<HotItemsUserBehavior> inputSource =
+                env.addSource(new FlinkKafkaConsumer011<String>("flinktest1",
+                        new SimpleStringSchema(),
+                        prop))
                 .map(new MapFunction<String, HotItemsUserBehavior>() {
                     @Override
                     public HotItemsUserBehavior map(String value) throws Exception {
@@ -77,6 +76,7 @@ public class HotItems {
         //到这里仅仅是按每隔itemId分组操作完成了,直接排序是不对的,需要先按窗口keyBy,再排序
         aggStream.keyBy(x -> x.getWindowEnd())
                 .process(new SortTopNFunction());
+        env.execute();
     }
 }
 

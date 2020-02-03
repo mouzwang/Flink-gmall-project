@@ -1,9 +1,12 @@
 package com.yangcong.bigdata.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by mouzwang on 2020-01-19 15:08
  */
-public class LoginEvent {
+public class LoginEvent implements Serializable {
+    private static final long serialVersionUID=1L;
     private long userId;
     private String ip;
     private String status;
