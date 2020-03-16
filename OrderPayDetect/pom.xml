@@ -11,6 +11,14 @@
 
     <groupId>com.see</groupId>
     <artifactId>OrderPayDetect</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.yangcong</groupId>
+            <artifactId>Defination</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

@@ -36,7 +36,7 @@ object UniqueVisitor {
   }
 }
 
-//每一个窗口内的每个元素都会调用apply方法
+//一个窗口调用一次apply方法
 class UVCountByALLWindow extends AllWindowFunction[UserBehavior, UvCount, TimeWindow] {
   override def apply(window: TimeWindow, input: Iterable[UserBehavior], out: Collector[UvCount]): Unit = {
     //用一个set来去重
